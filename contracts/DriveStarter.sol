@@ -15,13 +15,14 @@ contract DriveStarter is DriveFactory {
 
     /// events
     event DonationMade(
+        uint _driveId,
         address indexed _from,
         uint _value,
         uint _currentBalance,
         uint _target
     );
-    event RecipientPaid(address indexed _recipient, uint _value);
-    event DonorRefunded(address indexed _donor, uint _amount);
+    event RecipientPaid(uint _driveId, address indexed _recipient, uint _value);
+    event DonorRefunded(uint _driveId, address indexed _donor, uint _amount);
 
     /// structs
     struct Donation {
@@ -55,10 +56,10 @@ contract DriveStarter is DriveFactory {
         Drive storage drive = drives[_driveId];
         drive.balance.add(msg.value);
         donations.push(Donation(msg.sender, msg.value));
-        emit DonationMade(msg.sender, msg.value, drive.balance, drive.target);
+        emit DonationMade(_driveId, msg.sender, msg.value, drive.balance, drive.target);
         if (drive.balance >= drive.target) {
             _makePayment(payable(drive.recipient), drive.balance);
-            emit RecipientPaid(drive.recipient, drive.balance);
+            emit RecipientPaid(_driveId, drive.recipient, drive.balance);
             drive.completed = true;
         }
     }
@@ -67,7 +68,7 @@ contract DriveStarter is DriveFactory {
         Drive storage drive = drives[_driveId];
         for (uint i = drive.refundIndex; i < drive.maxDonors; i.add(1)) {
             _makePayment(payable(donations[i].donor), donations[i].amount);
-            emit DonorRefunded(donations[i].donor, donations[i].amount);
+            emit DonorRefunded(_driveId, donations[i].donor, donations[i].amount);
             drive.refundIndex.add(1);
         }
         drive.completed = true;

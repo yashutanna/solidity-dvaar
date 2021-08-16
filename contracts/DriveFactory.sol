@@ -23,7 +23,8 @@ contract DriveFactory {
     Drive[] public drives;
     mapping (uint => address) private addressForDrive;
 
-    constructor() {
+    function getDrives() view external returns (Drive[] memory _drives){
+        return drives;
     }
 
     function startDrive(
@@ -32,8 +33,11 @@ contract DriveFactory {
         uint _expiryDays,
         uint _target,
         uint _maxDonors
-    ) external {
-        drives.push(Drive(_purpose, _recipient, false, block.timestamp + (_expiryDays * 1 days), _target, _maxDonors, 0, 0));
-        addressForDrive[drives.length -1] = msg.sender;
+    ) external returns (uint _driveId, Drive memory _drive){
+        Drive memory newDrive = Drive(_purpose, _recipient, false, block.timestamp + (_expiryDays * 1 days), _target, _maxDonors, 0, 0);
+        drives.push(newDrive);
+        uint id = drives.length - 1;
+        addressForDrive[id] = msg.sender;
+        return (id, newDrive);
     }
 }
